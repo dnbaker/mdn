@@ -1,0 +1,3 @@
+[submodule "mdn/glow-pytorch"]
+	path = mdn/glow-pytorch
+	url = https://github.com/dnbaker/glow-pytorch
