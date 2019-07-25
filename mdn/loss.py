@@ -49,7 +49,6 @@ def zinb_loss(x, mu, theta, pi, eps=EPS):
 
 def nb_loss(x, mu, theta, eps=EPS):
     """
-    Note: All inputs should be torch Tensors
     log likelihood (scalar) of a minibatch according to a nb model.
     Variables:
     mu: mean of the negative binomial (has to be positive support) (shape: minibatch x genes)
@@ -57,9 +56,7 @@ def nb_loss(x, mu, theta, eps=EPS):
     eps: numerical stability constant
     """
     if theta.ndimension() == 1:
-        theta = theta.view(
-            1, theta.size(0)
-        )  # In this case, we reshape theta for broadcasting
+        theta = theta.unsqueeze(0);
 
     log_theta_mu_eps = torch.log(theta + mu + eps)
 
@@ -71,6 +68,6 @@ def nb_loss(x, mu, theta, eps=EPS):
         - torch.lgamma(x + 1)
     )
 
-return torch.sum(res, dim=-1)
+    return torch.sum(res, dim=-1)
 
 __all__ = [mdn_logloss, mdnpos_losloss, zinb_loss, nb_loss]
