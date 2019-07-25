@@ -1,25 +1,30 @@
 #include "fht.h"
+#include <random>
 using namespace fht;
 
-template<typename T>void show(const T&x) {
-    size_t k = 0;
-    for(const auto i: x) {
-        std::fprintf(stderr, "%lf,", double(i)); std::fputc('\n', stderr);
-        if(++k == 10) return;
-    }
-}
-
-int main() {
-    int l2 = 16, subl2 = 8;
+int main(int argc, char *argv[]) {
+    int l2 = argc == 1 ? 16: std::atoi(argv[1]), subl2 = 4;
     std::vector<double> zomg(1 << l2);
-    for(auto &e: zomg) e = std::rand() / double(RAND_MAX);
+    std::normal_distribution<float> gen;
+    std::mt19937_64 mt;
+    for(auto &e: zomg) e = gen(mt);
     std::vector<double> z2 = zomg;
     assert(z2 == zomg);
     show(z2);
-    show(zomg);
+#if 0
+    for(int i = 1; i <= l2; ++i) {
+        printf("bhefore:\n");
+        show(z2);
+        dumbfht(z2.data(), i);
+        printf("bafter:\n");
+        show(z2);
+        z2 = zomg;
+    }
+#endif
     dumbfht(z2.data(), l2);
-    call_dumbfht(zomg.data(), l2, subl2);
     show(z2);
+    show(zomg);
+    call_dumbfht(zomg.data(), l2, subl2);
     show(zomg);
     double sum = 0.;
     for(size_t i = 0; i < z2.size(); ++i)
