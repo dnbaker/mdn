@@ -36,6 +36,33 @@ template<typename T>
 __global__ void dumbfht_gpu_kernel(T *ptr, size_t l2, int per_thread, int ptl2) {
     int tid = blockIdx.x*blockDim.x + threadIdx.x;
     int start_index = per_thread * tid, stop_index = start_index + per_thread;
+    for(int i = 0; i < l2 - ptl2; ++i) {
+        int s1 = 1 << i, s2 = s1 << 1;
+        #pragma unroll
+        for(int j = start_index; j < stop_index; j += s2) {
+            #pragma unroll
+            for(size_t k = 0; k < s1; ++k) {
+                auto u = ptr[j + k], v = ptr[j + k + s1];
+                ptr[j + k] = u + v, ptr[j + k + s1] = u - v;
+            }
+        }
+        __syncthreads();
+    }
+    for(int i = l2 - ptl2; i < l2; ++i) {
+        int s1 = 1 << i, s2 = s1 << 1;
+        if(tid < (1 << i)) {
+            #pragma unroll
+            for(int j = start_index; j < stop_index; j += s2) {
+                #pragma unroll
+                for(size_t k = 0; k < s1; ++k) {
+                    auto u = ptr[j + k], v = ptr[j + k + s1];
+                    ptr[j + k] = u + v, ptr[j + k + s1] = u - v;
+                }
+            }
+        }
+        __syncthreads();
+    }
+#if 0
     for(size_t i = 0; i < l2; ++i) {
         int max_thread_num = 1 << (l2 - i);
         if(i < max_thread_num) {
@@ -51,6 +78,7 @@ __global__ void dumbfht_gpu_kernel(T *ptr, size_t l2, int per_thread, int ptl2) 
         }
         __syncthreads();
     }
+#endif
 }
 
 template<typename T>
